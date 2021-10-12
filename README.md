@@ -1,3 +1,8 @@
+<!--
+ignore these words in spell check for this file
+// cSpell:ignore
+-->
+
 # Udemy Course Docker Mastery: with Kubernetes+Swarm from a Docker Captain
 
 > Build, test, deploy containers with the best mega-course on Docker, Kubernetes, Compose, Swarm and Registry using DevOps
@@ -13,3 +18,9 @@ https://www.bretfisher.com/courses
 My other DevOps and Docker resources are at https://www.bretfisher.com/docker
 
 Feel free to create issues or PRs if you find a problem with examples in this repo!
+
+## Benjamin's Additions
+
+all sorts of stuff that i want to have here.
+
+[Bret Fisher youtube](https://www.youtube.com/channel/UC0NErq0RhP51iXx64ZmyVfg)
