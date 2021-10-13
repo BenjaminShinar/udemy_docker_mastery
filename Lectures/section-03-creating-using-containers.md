@@ -1,13 +1,13 @@
 <!--
 ignore these words in spell check for this file
-// cSpell:ignore distro
+// cSpell:ignore distro Comms ddress centos nslookup hostnames
 -->
 
 ## Creating and Using Containers Like a Boss
 
-<!-- <details> -->
+<details>
 <summary>
-//TODO: add Summary
+Creating containers from the command line, stepping into them, removing them and doing network stuff.
 </summary>
 
 Containers are the fundamental building blocks of docker.
@@ -18,38 +18,6 @@ Containers are the fundamental building blocks of docker.
 - learn docker networking basics.
 
 lets make sure our docker is installed correctly
-
-the management commands are a new way to sub section commands.
-commands (power shell):
-
-- _docker version_ - return versions of the clients and server dockers.
-- _docker info_ - more information
-- _docker_ - get list of commands, including management commands.
-- _docker \<command> \<sub-command> (options)_ - new way, with management commands.
-- _docker \<command> (options)_ - old way.
-- _docker \<command> --help_ - information on command.
-- _docker container run_ - start a container, with an image
-  - _--detach_, _-d_ - run in background
-  - _--publish_, _-p_ - port forwarding (host:container),
-  - _--name_ - specify name of the container
-  - _--env_ - pass environments variables
-  - _-it_ - start new container interactively.
-- _docker container ls_ - list all the containers (new format). by default only shows running containers,
-  - _-a_ - all, show also stopped containers.
-- _docker ps_ - list all containers (old format)
-- _docker container stop <#id>_ - stop a container.
-- _docker stop <#id>_ - stop a container.
-- _docker container logs \<name>_ - see logs for container.
-- _docker logs \<name>_ - see logs for container (old format).
-- _docker container top \<name>_ - see the processes running inside the container.
-- _docker container rm <#id1> <#id2>_ - remove containers, we can specify more than one container.
-  - _-f_ - flag to remove running containers.
-- _docker start \<name>_ - run a stopped container. (old format)
-- _docker image ls_ - see list of images.
-- _docker container inspect <#id>_- details of one container config meta data (JSON).
-- _docker container stats_ - details of one or all of our container config.
-- _docker container exec -it_ - run an additional command in existing container
-- _docker image pull \<image name>_ - download image from hub.
 
 `docker container run` is the new way to run containers, with 'container' being the management command and 'run' being the sub command, but the old way `docker run' still works. existing commands will continue using both formats, but new commands will probably only be available in the new format.
 
@@ -193,7 +161,7 @@ docker container stats
 
 </details>
 
-## Getting a Shell Inside Containers: No Need for SSH
+### Getting a Shell Inside Containers: No Need for SSH
 
 <details>
 <summary>
@@ -241,6 +209,207 @@ docker container run -it alpine sh
 
 </details>
 
-## aa
+### Docker Networks
+
+<details>
+<summary>
+How containers communicate with networks and with one another
+</summary>
+
+#### Concepts for Private and Public Comms in Containers
+
+<details>
+<summary>
+Basic review of networks concepts regarding Docker.
+</summary>
+
+conceptual stuff, mostly
+
+_-p,--publish_ exposes the port on the local machine to the container. most of the time, networks in dockers simply work, but there are stuff to learn.
+
+##### Docker Networks Defaults
+
+Each container is connected by default to a private virtual network "bridge", each virtual network routes through NAT firewall on the host IP. All the containers on the same virtual work can talk to each other without routing through the host (with _-p_). Best practices is to set different virtual networks for different apps
+
+> network "my_web_app" for mysql and php/apache containers
+> network "my_api" for mongo and node.js containers.
+
+all of those setting are changeable, this ties in to the idiom of of Docker "Batteries Included, But Removable". things will work out of the box without us applying changes, but we can swap out parts to customize it to fit our needs.
+
+we can make new virtual networks,attach one container to two or more virtual networks (or zero), or skip the virtual network and use the host IP directly
+_--net=host_ flag. there is a plugin eco system of docker networks drivers that can give us new abilities.
+
+```sh
+docker container run -p 80:80 --name webHost -d nginx
+docker container port webHost
+docker container inspect --format "{{ .NetworkSettings.IPAddress }}" webHost
+```
+
+the ip address isn't the same as what we see in the _ipconfig_.
+
+bridge/docker0 virtual network, is attached to the ethernet interface on one side, and containers on the other side.
+
+only one container can listen on port on the host machine.
+
+```sh
+docker container run -p 80:80 --name webHost1 -d nginx #okay
+docker container run -p 8080:80 --name webHost2 -d nginx #okay
+docker container run -p 80:8080 --name webHost3 -d nginx #error!
+```
+
+</details>
+
+#### CLI Management of Virtual Networks
+
+<details>
+<summary>
+basic commands for networks.
+</summary>
+
+note: currently, use nginx:alpine image to get the `ping` command.
+
+lets look at some network commands, _ls_, _inspect_, _create_, _connect_, _disconnect_.
+
+```sh
+docker network ls
+```
+
+the network bridge is the default network that bridges through the NAT firewall and the containers.
+
+```sh
+docker network inspect bridge
+docker network inspect bridge --format "{{.Containers}}"
+```
+
+the default network IP for docker is 172.17.#.#. we can look at other networks and see the host network is directly connected outside.
+the _--network none_ option removes the eth0 and leaves us only with local host interface on the container
+
+```sh
+docker network create my_app_net
+docker network ls
+docker network create --help
+```
+
+the default driver is 'bridge'. we look at the create command and see other options.
+
+```sh
+docker container run -d --name new_nginx --network my_app_net nginx
+docker network inspect my_app_net
+```
+
+we can also attach networks to containers after they have been created. a container can be on more than one network.
+
+```sh
+docker network connect my_app_net webHost
+docker network disconnect my_app_net webHost
+```
+
+> - Create your apps so frontend/backend sit on the same Docker network.
+> - Their inter-communication never leaves host.
+> - All externally exposed ports closed by default.
+> - Must be manually exposed via _-p_,_--publish_, so default security is higher.
+
+</details>
+
+#### DNS
+
+<details>
+<summary>
+Domain name service lookup in containers.
+</summary>
+
+DNS - Domain name service
+
+how dns effect containers in custom and default networks,
+we can't rely on IP address inside containers, because everything is so dynamic.
+the _--link_ flag to enable DNS on default bridge networks.
+
+containers change ips constantly, they stop and start again, the static IP just doesn't cut it anymore. the DNS is a built-in solution for this. in non default networks, the dns abilities are default enabled.
+
+```sh
+docker container run -d --name my_nginx --network my_app_net nginx:alpine
+docker container exec -it my_nginx ping new_nginx
+```
+
+this is very important when running many containers, it doesn't matter the order of creation, as long as they belong to the same network, they can talk to one another.
+
+the _--link_ flag allows us to link containers on the default bridge network, but we need to pass a list of other containers to work against.
+
+</details>
+
+#### Assignment #2 Using Containers for CLI Testing
+
+<details>
+<summary>
+running two containers to get different images
+</summary>
+
+> - Use different linux distro containers to check _curl_ cli tool version.
+> - Use two different terminal windows to start bash in both _centos:7_ and _ubuntu:14.04_, using _-it_
+> - Learn about `docker container run --rm` option to save cleanup.
+> - Ensure _curl_ is installed and on the latest version for that distro
+>   - ubuntu: `apt-get update && apt-get install curl`
+>   - centos: `yum update curl`
+> - Check that `curl --version` displays properly.
+
+```sh
+docker image pull centos:7
+docker container run -it --name cnt7 --rm centos:7
+yum update curl
+curl --version
+docker image pull ubuntu:14.04
+docker container run -it --name ubt --rm ubuntu:14.04 bash
+apt-get update
+apt-get install -y curl
+curl -V
+```
+
+we can see that the versions of curl are different between the two images. nothing to clean up
+
+</details>
+ 
+#### Assignment #3 DNS Round Robin Test
+
+<details>
+<summary>
+Using DNS aliases.
+</summary>
+
+[Round Robin DNS](https://en.wikipedia.org/wiki/Round-robin_DNS)
+
+> Note: In the next assignment, you'll be using the tool nslookup inside the alpine:latest image, but in early 2020 there was a bug introduced to the latest Alpine image 3.11.3 that affects how nslookup works on hostnames, so for the next Assignment on DNS Round Robin, either change your command to work around it with nslookup search. (with a dot added) or use an older Alpine image like alpine:3.10.
+
+two different hosts with dns aliases that respond to to same name, multiple ip address behind the same DNS name. we use this instead of the unique container name.elasticsearch gives out random names for itself.
+
+> Create a new virtual network (default bridge driver) called 'search'
+> Create two containers from image _elasticsearch:2_
+> Research and use `docker container run --network-alias search` to give them an additional dns name to respond to.
+> Run `alpine nslookup search` with _--net_ to see the two containers list for the same DNS name. from the alpine image
+> Run `centos curl -s search:9200` with _--net_ multiple times until both "names" of the elasticsearch containers show.
+
+```sh
+docker image pull elasticsearch:2
+docker network create round_robin
+docker container run -d --rm --network round_robin --network-alias search --name els1 elasticsearch:2
+docker container run -d --rm --network round_robin -network-alias search --name els2 elasticsearch:2
+docker network inspect round_robin
+docker container run -iy --rm --network round_robin --name alp alpine
+
+docker container run -d --rm --network round_robin --name cnt centos
+docker container exec -it cnt bash
+curl -s search:9200
+```
+
+should have used
+
+```
+docker container run --rm --network round_robin alpine nslookup search.
+docker container run --rm --network round_robin  centos curl -s search:9200
+
+```
+
+</details>
+
+</details>
 
 </details>
