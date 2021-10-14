@@ -29,6 +29,7 @@ commands (power shell):
   - _--network-alias,--net-alias_ \<alias> - Add network-scoped alias for the container.
   - _--link \<list>_ - enable dns on default bridge network.
   - _--rm_ - Automatically remove the container when it exits.
+  - _--volume, -v_ - connect to a named volume.
 - _docker container ls_ - list all the containers (new format). by default only shows running containers.
   - _-a_ - all, show also stopped containers.
   - _docker ps_ - list all containers (old format)
@@ -86,7 +87,13 @@ commands (power shell):
 - _docker-machine rm default_
 - _docker-machine create_
 
-## Docker
+### Docker Volume
+
+- _docker volume ls_ - list volumes
+- _docker volume inspect_ - inspect
+- _docker volume create_ - create volume before running to use custom drivers and labels
+
+## Docker File
 
 - FROM
 - ENV
@@ -95,3 +102,5 @@ commands (power shell):
 - CMD
 - WORKDIR
 - COPY
+- VOLUME
+- ENTRYPOINT
