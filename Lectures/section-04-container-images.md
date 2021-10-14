@@ -1,11 +1,11 @@
 <!--
 ignore these words in spell check for this file
-// cSpell:ignore
+// cSpell:ignore tini mkdir
 -->
 
 ## Container Images, Where To Find Them and How To Build Them
 
-<!-- <details> -->
+<details>
 <summary>
 What are images, where to find them and manage them, how to build them.
 </summary>
@@ -84,9 +84,9 @@ docker image inspect nginx
 
 #### Image Tagging and Pushing to Docker Hub
 
-<!-- <details> -->
+<details>
 <summary>
-//TODO: add Summary
+Image identification via tags.
 </summary>
 
 images don't have names actually. we usually refer to them by "\<user>/\<repo>:\<tag>". official images don't have the 'user' data.
@@ -112,13 +112,176 @@ if the images already exist, they won't be pushed or pulled. this is how we save
 
 ### Building Images
 
-<!-- <details> -->
+<details>
 <summary>
-//TODO: add Summary
+Actually Building images.
 </summary>
+
+#### The Docker File Basics
+
+<details>
+<summary>
+Docker file basic structure
+</summary>
+
+looking at the dockerfile-sample-1 folder at seeing how it's made.
+it's not a shell script, the default name is 'Dockerfile', but when we use the command line, we can specify a file name with _-f_ flag.\
+`docker build -f some-dockerfile-arbitrary-name`
+
+each part is called **stanza**, a term originally referring to block of lines in a poem.
+
+the first stanza\part is the `FROM` commands, it normally is from a minimal distribution, such as debian or alpine.
+
+the next stanza\part is `ENV`, setting environment variables. they can be used anywhere.
+
+each stanza is actually a layer, the order matters. a lot of times we have multiple commands chained together. Chaining the commands together ensures they all go in the same stanza.
+
+docker handles all the logging for us, our app should direct the logging to the stdout and stderr. we shouldn't use logging files.
+
+`EXPOSE` opens up ports from the container towards the virtual network. we still need to run the container with the _--publish_ flag to forward ot these port on the host.
+
+The `CMD` stanza is required. it's the command that will run when the container is launched. only one is allowed
+
+```dockerfile
+#comment
+FROM debian:jessie
+ENV NGINX_VERSION 1.13.6-1~stretch
+
+RUN apt-get update \
+	&& apt-get install --no-install-recommends --no-install-suggests -y gnupg1 \
+    ## more installations
+
+#LOGGING
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+	&& ln -sf /dev/stderr /var/log/nginx/error.log
+# forward request and error logs to docker log collector
+
+# PORTS
+EXPOSE 80 443
+
+# Command that runs
+CMD ["nginx", "-g", "daemon off;"]
+```
 
 </details>
 
-##
+#### Running Docker Builds
 
+<details>
+<summary>
+running image builds, caching and order of layers.
+</summary>
+now that we have the file, running the build command will run the commands inside the docker  runtime and cache the results into the image.
+
+```sh
+docker image build -t custom-nginx-beny .
+```
+
+if the dockerfile doesn't change, then the build is cached and it won't take long to build.
+
+we can look at our images to see that our new image exists as latest. we can add an additional port and try building again this time it's really quick.
+
+if we get things out of order, the building time changes. we want to keep the top of the file with the parts that don't change, and the bottom of the file with things that do.
+
+</details>
+
+#### Extending Official Images
+
+<details>
+<summary>
+Adding layers to official images.
+</summary>
+
+in the dockerfile-sample-2 folder we see two files, one dockerfile and one html index file.
+
+in this file, we use an image as the source for the `FROM` stanza.
+
+we have a `WORKDIR` stanza, which is easier to describe than `run cd some/path`, even if they do the same.
+
+`COPY` copies source code from the build source into container.
+
+```dockerfile
+COPY index.html index.html
+```
+
+we don't need to add `CMD` because it's already inside the `from` stanza.
+
+lets first look at the default behavior of nginx. we run it and then look at the browser in localhost and see the default html page.\
+next we build and run the custom nginx. we look at the local host and the html is different!
+
+```sh
+docker container run -d -p 80:80 --rm nginx
+
+docker image build -t nginx-custom-index .
+docker container run -d -p 80:80 --rm  nginx-custom-index
+```
+
+</details>
+
+#### Assignment: Build Your Own Dockerfile and Run Containers From It
+
+<details>
+<summary>
+building a docker file for a node.js app.
+</summary>
+
+file and details in docker-file-assignment-1/dockerfile.
+
+> Instructions from the app developer
+>
+> - you should use the 'node' official image, with the alpine 6.x branch ( node:6-alpine)
+>   - yes this is a 2-year old image of node, but all official images are always
+>     available on Docker Hub forever, to ensure even old apps still work. It is common to still need to deploy old app versions, even years later.
+> - this app listens on port 3000, but the container should launch on port 80 so it will respond to http://localhost:80 on your computer
+> - then it should use alpine package manager to install tini: 'apk add --update tini'
+> - then it should create directory /usr/src/app for app files with 'mkdir -p /usr/src/app'
+> - Node uses a "package manager", so it needs to copy in package.json file
+> - then it needs to run 'npm install' to install dependencies from that file
+> - to keep it clean and small, run 'npm cache clean --force' after above
+> - then it needs to copy in all files from current directory
+> - then it needs to start container with command 'tini -- node ./bin/www'
+> - in the end you should be using `FROM`, `RUN`, `WORKDIR`, `COPY`, `EXPOSE`, and `CMD` commands
+
+[Node.js docker hub](https://hub.docker.com/_/node)
+
+- [x] building minimal - able to build image and run container
+- [x] create directory
+- [x] install packages
+- [x] clear cache
+- [x] copy all from current directory
+- [x] expose ports
+- [x] install dependencies
+- [x] start with node command
+
+commands
+
+```sh
+docker image build -t app-one .
+docker image ls
+docker container run -d -p 80:3000 --rm app-one
+```
+
+the rest is pushing to dockerHub.
+
+</details>
+
+#### Using Prune to Keep Your Docker System Clean (YouTube)
+
+<details>
+<summary>
+Cleanup
+</summary>
+
+[youtube](https://youtu.be/_4QzP7uwtvI)
+
+builtin features, to see space usage and clean them
+
+```sh
+docker image prune
+docker system prune
+docker system df
+```
+
+</details>
+</details>
 </details>

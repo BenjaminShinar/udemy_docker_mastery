@@ -62,5 +62,36 @@ commands (power shell):
 - _docker image inspect_ - inspect image for metadata.
 - _docker image pull \<image name>_ - download image from hub.
 - _docker image history \<image name>_ - show history union (the changes).
-- _docker image tag \<source image> \<target image name>_ - create a new image based on an existing one. we can add tags. if we don't change it, the id is still the same.
-- _docker image push_ - upload a changed image layers to registry
+- _docker image tag \<source image> \<tag>_ - create a tag image based on an existing image. we can add tags. if we don't change it, the id is still the same.
+- _docker image push_ - upload a changed image layers to registry.
+- _docker image build \<destination>_ - build an image from file
+  - _--tag, -t_ - specify tag.
+  - _--file, -f_ - specify docker file to build from.
+- _docker image prune_ - clean dangling images.
+  - _--all, -a_ - remove all unused images, not just dangling.
+  - _--force, -f_ - skip confirmation.
+  - _--filter_ - provide filter.
+
+### Docker System
+
+- _docker system prune_ - remove unused data
+  - _--all, -a_ - remove all unused , not just dangling.
+  - _--force, -f_ - skip confirmation.
+  - _--filter_ - provide filter.
+  - _--volumes_ - prune volumes.
+- _docker system df_ - see space usage
+
+### Docker Machine
+
+- _docker-machine rm default_
+- _docker-machine create_
+
+## Docker
+
+- FROM
+- ENV
+- RUN
+- EXPOSE
+- CMD
+- WORKDIR
+- COPY
