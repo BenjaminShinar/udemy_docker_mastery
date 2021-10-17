@@ -37,6 +37,7 @@ commands (power shell):
   - _docker stop <#id>_ - stop a container (old format).
 - _docker container logs \<name>_ - see logs for container.
   - _docker logs \<name>_ - see logs for container (old format).
+  - _--follow,-f_ - follow, keep getting logs.
 - _docker container top \<name>_ - see the processes running inside the container.
 - _docker container rm <#id1> <#id2>_ - remove containers, we can specify more than one container.
   - _-f_ - flag to remove running containers.
@@ -90,10 +91,15 @@ commands (power shell):
 ### Docker Volume
 
 - _docker volume ls_ - list volumes
+  - _--filter, -f_ - filter.
+  - _--format_ - print format.
+  - _--quiet, -q_ - show only names.
 - _docker volume inspect_ - inspect
 - _docker volume create_ - create volume before running to use custom drivers and labels
 
 ## Docker File
+
+Stanzas:
 
 - FROM
 - ENV
