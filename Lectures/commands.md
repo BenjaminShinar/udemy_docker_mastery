@@ -110,3 +110,41 @@ Stanzas:
 - COPY
 - VOLUME
 - ENTRYPOINT
+
+## Docker Compose YML
+
+set up the version of the yml
+
+- version:
+
+which containers to run
+
+- services:
+  - image
+  - environment
+  - ports
+  - networks
+  - depends_on
+  - build
+    - context
+    - dockerfile
+
+data volumes
+
+- volumes:
+
+networks
+
+- networks:
+
+## Docker Compose Command Line
+
+- _docker-compose up_ - setup volumes/networks and start all containers.
+  - _-d_ - run detached, in the background.
+- _docker-compose down_ - stop and remove all containers, also remove networks and volumes.
+  - _--volumes, -v_ - clean up volumes as well
+  - _--rmi \<type>_ - remove images
+    - _all_ - all images used by the services
+    - _local_ - only images that don't have a custom tag set (locally built)
+- _docker-compose logs_ - see logs
+- _docker-compose build_ - build images

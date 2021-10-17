@@ -1,10 +1,8 @@
-# create your drupal and postgres config here, based off the last assignment
 version: "2"
 
 services:
   drupal:
-    image: custom-drupal #image name, optional
-    build: . #build from here
+    image: drupal
     ports:
       - "8080:80" # expose 8080 on host and sent to 80 in container
     volumes:
@@ -16,17 +14,14 @@ services:
       # existing content of the image at the same location
       - drupal-themes:/var/www/html/sites
   pstdb:
-    image: postgres:12.1-alpine
+    image: postgres:alpine
     environment:
       # POSTGRES_DB: default to postgres
       # POSTGRES_USER: default to postgres
       POSTGRES_PASSWORD: my_password
-    volumes:
-      - drupal-data:/var/lib/postgresql/data
 
 volumes:
   drupal-modules:
   drupal-profiles:
   drupal-sites:
   drupal-themes:
-  drupal-data:
