@@ -1,6 +1,6 @@
 <!--
 ignore these words in spell check for this file
-// cSpell:ignore
+// cSpell:ignore trunc
 -->
 
 ## Command line
@@ -16,6 +16,11 @@ commands (power shell):
 - _docker \<command> --help_ - information on command.
 - _docker login_ - login to hub
 - _docker logout_ - logout from hub
+
+- ls common flags - listing
+  - _--filter, -f_ - filter.
+  - _--format_ - print format.
+  - _--quiet, -q_ - show only names.
 
 ### Docker Container
 
@@ -48,6 +53,7 @@ commands (power shell):
 - _docker container stats_ - details of one or all of our container config.
 - _docker container exec -it_ - run an additional command in existing container
 - _docker container port \<name>_ - which ports are forwarding traffic.
+- _docker container update_ - update containers attribute
 
 ### Docker Network
 
@@ -91,11 +97,42 @@ commands (power shell):
 ### Docker Volume
 
 - _docker volume ls_ - list volumes
-  - _--filter, -f_ - filter.
-  - _--format_ - print format.
-  - _--quiet, -q_ - show only names.
 - _docker volume inspect_ - inspect
 - _docker volume create_ - create volume before running to use custom drivers and labels
+
+### Docker Swarm
+
+- _docker swarm init_ - initialize swarm with manager node
+  - _--advertise-addr_ - up
+- _docker swarm join_
+  - _--token_
+- _docker swarm join-token \<option>_ - get join token, worker | manager
+
+### Docker Node
+
+- _docker node ls_ - list nodes
+
+### Docker Service
+
+- _docker service create_ - create service from image.
+- _docker service ls_ - list services
+- _docker service ps \<one or more services>_ - list services, like a container.
+  - _--no-resolve_ - no mapping of IDs to name
+  - _--no-trunc_ - show full id and image sha.
+- _docker service update \<service>_ - change attribute about the service
+  - _--replicas \#number_ -
+- _docker service rm_ - remove a service and it's containers.
+
+### Docker Stack
+
+- _--orchestrator_ - orchestrator to use (swarm|kubernetes|all)
+- _docker stack deploy_
+- _docker stack ls_
+- _docker stack ps_
+- _docker stack rm_
+- _docker stack services_
+
+### Docker Secret
 
 ## Docker File
 
