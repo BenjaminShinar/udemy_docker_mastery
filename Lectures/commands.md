@@ -115,6 +115,7 @@ commands (power shell):
 ### Docker Service
 
 - _docker service create_ - create service from image.
+  - _--secret_ - pass a secret to the service to "/run/secrets/secret_name" temp path
 - _docker service ls_ - list services
 - _docker service ps \<one or more services>_ - list services, like a container.
   - _--no-resolve_ - no mapping of IDs to name
@@ -122,17 +123,26 @@ commands (power shell):
 - _docker service update \<service>_ - change attribute about the service
   - _--replicas \#number_ -
 - _docker service rm_ - remove a service and it's containers.
+- _docker service logs_ - see logs of service
 
 ### Docker Stack
 
 - _--orchestrator_ - orchestrator to use (swarm|kubernetes|all)
-- _docker stack deploy_
-- _docker stack ls_
-- _docker stack ps_
-- _docker stack rm_
-- _docker stack services_
+- _docker stack deploy_ - create swarm from compose file.
+- _docker stack rm_ - remove stack
+- _docker stack ls_ - list stacks
+- _docker stack services_ - list services
+- _docker stack ps_ - list tasks
 
 ### Docker Secret
+
+- _docker secret create_ - create secret from file or directly
+  - _--driver, -d_ -
+  - _--label, -l_ -
+  - _--template-driver_ -
+- _docker secret ls_ - list secrets.
+- _docker secret inspect_ - inspect meta-date and information.
+- _docker secret rm_ - remove secret.
 
 ## Docker File
 
@@ -150,11 +160,11 @@ Stanzas:
 
 ## Docker Compose YML
 
-set up the version of the yml
+**set up the version of the yml**
 
 - version:
 
-which containers to run
+**which containers to run**
 
 - services:
   - image
@@ -162,17 +172,35 @@ which containers to run
   - ports
   - networks
   - depends_on
-  - build
+  - build (local only)
     - context
     - dockerfile
+  - deploy (swarm stack only)
+    - mode
+    - labels
+    - replicas
+    - update_config
+      - parallelism
+      - delay
+    - restart_policy
+      - condition
+      - window
+      - max_attempts
+    - placement
+      - constraints
+  - secrets
 
-data volumes
+**data volumes**
 
 - volumes:
 
-networks
+**networks**
 
 - networks:
+
+**secrets**
+
+- files
 
 ## Docker Compose Command Line
 

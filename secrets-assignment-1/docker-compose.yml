@@ -1,0 +1,37 @@
+version: "3.1" #for secretes
+
+services:
+  drupal:
+    image: drupal:8.2
+    # build: . #build from here
+    ports:
+      - "8080:80" # expose 8080 on host and sent to 80 in container
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles
+      - drupal-sites:/var/www/html/themes
+      # this takes advantage of the feature in Docker that a new anonymous
+      # volume (which is what we're creating here) will be initialized with the
+      # existing content of the image at the same location
+      - drupal-themes:/var/www/html/sites
+  pstdb:
+    image: postgres:12.1-alpine
+    environment:
+      # POSTGRES_DB: default to postgres
+      # POSTGRES_USER: default to postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/psql-pw
+    volumes:
+      - drupal-data:/var/lib/postgresql/data
+    secrets:
+      - psql-pw
+
+volumes:
+  drupal-modules:
+  drupal-profiles:
+  drupal-sites:
+  drupal-themes:
+  drupal-data:
+
+secrets:
+  psql-pw:
+    external: true

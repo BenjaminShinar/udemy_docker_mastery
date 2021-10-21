@@ -1,6 +1,6 @@
 <!--
 ignore these words in spell check for this file
-// cSpell:ignore psql examplevotingapp_vote  examplevotingapp bretfisher
+// cSpell:ignore psql  voteapp
 -->
 
 ## Swarms
@@ -182,18 +182,17 @@ docker service create --replicas 3 alpine ping 8.8.8.8
 ```
 
 </details>
+
 </details>
 
 ### Swarm Basic Features
 
-<!-- <details> -->
+<details>
 <summary>
-//TODO: add Summary
+Basic behavior of Swarm
 </summary>
 
 How to use the swarm features in our work flow.
-
-new features
 
 overlay - when creating a network, we add the _--driver overlay_ flag.\
 routing mesh
@@ -266,7 +265,7 @@ curl localhost:9200
 
 #### Assignment #1: Create A Multi-Service Multi-Node Web App
 
-<!-- <details> -->
+<details>
 <summary>
 creating the assets we need for running a multi-tier app.
 </summary>
@@ -280,28 +279,36 @@ creating the assets we need for running a multi-tier app.
 [example voting app](https://hub.docker.com/r/docker/example-voting-app-vote), [redis](https://hub.docker.com/_/redis)
 
 ```sh
+
+docker swarm init --advertise-addr 192.168.0.13 #ip address
+docker swarm join-token manager
+
+#copy and run the command in node2, node3
+
 docker network create --driver overlay backend
 docker network create --driver overlay frontend
 
-docker service create --name vote --network frontend --replicas 3 --publish 5000:80 bretfisher/examplevotingapp_vote
+docker service create --name vote --network frontend --replicas 3 --publish 80:80 bretfisher/examplevotingapp_vote
 
 docker service create --name redis --network frontend --replicas 1 redis:3.2
 
-docker service create --name worker --network frontend --network backend --replicas 1 bretfisher/examplevotingapp_vote
+docker service create --name worker --network frontend --network backend --replicas 1 bretfisher/examplevotingapp_worker
 
 docker service create --name db --network backend --replicas 1 --mount type=volume,source=db-data,target=/var/lib/postgresql/data -e POSTGRES_HOST_AUTH_METHOD=trust postgres:9.4
 
 docker service create --name result --network backend -p 5001:80 --replicas 1 bretfisher/examplevotingapp_result
 
+#open ip by pressing the open ports button and typing 80 and 5001
+docker service ps worker
+docker service logs worker
+
 ```
 
+the default is one replica, so if we don't want more, we can ignore this.
+there is an issue with the _--volume_ flag on swarms, so we use the _--mount_ flag with key-value map, we must have type, source,target.\
+the routing mesh doesn't play well with web socket, so that's another issue.
+
 </details>
-
-##
-
-</details>
-
-##
 
 </details>
 
@@ -309,11 +316,152 @@ docker service create --name result --network backend -p 5001:80 --replicas 1 br
 
 <details>
 <summary>
-//TODO: add Summary
+Stacks are ways to configure the swarm in a file. secrets are stored securly and can only be ace
 </summary>
+
+stacks of service, another layer of abstraction, stack accept compose files as declarative definition for services, networks, volumes.
+
+#### Swarm Stacks and Production Grade Compose
+
+<details>
+<summary>
+A basic configuration,
+</summary>
+
+`docker stack deploy` replaces `docker service create` as the command to start running.
+
+the stack manages all the objects for us, including overlay networks per stack. it adds the stack name to the start of their name.
+the compose file now has **deploy** key, and it removes the **build**, we shouldn't build images in the swarm. but the docker compose knows to ignore _deploy_, and the swarm compose knows to ignore _build_. it's fine.
+
+we don't need the _docker-compose cli_ on the swarm server, the docker stack command knows how to read the yml files. a stack has the services (each with tasks/replicas), the volumes and the overlay networks (also secrets)
+
+a stack works with one swarm only.
+
+the yml must be version 3 or higher to use stacks. we can control the deploy, decide where it's deployed (which node role), set delay time for warm up, etc...
+
+the stack doesn't run them immediately, it creates the objects and passes them to the scheduler.
+
+```sh
+docker stack deploy -c example-voting-app-stack.yml voteapp
+docker stack services
+```
+
+running deploy again updates the stack if there were changes to the yml file
+
+</details>
+
+#### Secrets Storage for Swarm: Protecting Your Environment Variables
+
+<details>
+<summary>
+creating and using secrets.
+</summary>
+
+Secret storage, built into the swarm.
+
+> "The easiest "secure" solution for storing secrets in Swarm"
+
+encrypted on disk, on transit, built in into the infrastructure
+
+> Secrets: any data you would prefer to keep to yourself
+>
+> - Usernames and passwords
+> - TLS certificates and keys
+> - SSH keys
+> - OAuth API Keys
+> - and more...
+
+supports generic strings or binary content (up to 500k, half a megabyte), doesn't require the app to talk to somewhere else.
+
+the Swarm Raft DB is encrypted on disk by default. only stored on the manager nodes. the keys are passed to the workers "control plane" via TLS + mutual auth. we store them in Swarm, and the assign the secrets to the services.for workers stored in memory only, not on disk. local docker-compose can use file-based secrets, but not securely.
+
+secret belong to swarm, docker-compose can 'read' secrets from 'files', but it won't be secure.
+
+to create a secret, we can pass a file or pass the secret directly (the **-** option). we can list the secrets or inspect them, but we will never see the content itself.
+
+```sh
+docker secret create psql_user psql_user.txt
+echo "myDBpassWORD" | docker secret create psql_pass -
+docker secret ls
+docker secret inspect
+```
+
+only the services can view the content of the secrets, they are exposed to them as if they were files on the disk in _/run/secrets/secret_name_ path. if we go into the nodes with `exec` we can view the content.
+
+```
+docker service create --name psql --secret psql_user --secret psql_pass -e POSTGRES_PASSWORD_FILE=/run/secrets/psql_pass -e POSTGRESS_USER_FILE=/run_secrets/psql_user postgres
+```
+
+we can remove the secret or add other, this would redeploy the service. so it's not great
+
+```sh
+docker service update --secret-rm
+```
+
+</details>
+
+#### Using Secret with Swarm Stacks
+
+<details>
+<summary>
+using secrets in stacks
+</summary>
+
+we can also have secrets with stacks, looking at "secrets-sample-2" folder, the minimal version is 3.1 for using secrets with stack.
+
+we can either use files of pre-create them, and then use externally by referring to them. there is a longer form to protect secrets with permissions and stuff
+
+```sh
+docker stack deploy -c docker-compose.yml my_db
+docker secret ls
+docker stack rm my_db
+```
+
+we should always clean up and remove secrets.
+
+</details>
+
+#### Assignment #2: Create A Stack with Secrets and Deploy
+
+<details>
+<summary>
+Adding secrets to stack in the docker-compose.yml file.
+</summary>
+
+> - using the drupal compose file from last assignment _compose-assignment-2_
+> - rename the image back to official drupal:8.2
+> - remove the _build:_ key
+> - add secret via external
+> - use environment variable _POSTGRES_PASSWORD_FILE_
+> - add secret via cli with `echo "<pw>" | docker secret create psql-pw -`
+> - copy compose into a new tml file on swarm node1
+
+- [x] change version to 3.1
+- [x] change image.
+- [x] add secrets section to the docker compose file
+  - [x] add psql-pw secret as external
+- [x] add secrets to service
+- [x] set environment _POSTGRES_PASSWORD_FILE_ to _run/secrets/psql-pw_
+- [x] add secret in the swarm manager cli
+- [x] open file on vim and copy the docker-compose content.yml / or touch to create file and then open the _editor_
+
+vim:
+
+- `:x` to save and exit
+- `:q!` to quit
 
 </details>
 
 #
+
+##
+
+swarmstacks and sectert
+
+</details>
+
+##
+
+swarms
 
 </details>
