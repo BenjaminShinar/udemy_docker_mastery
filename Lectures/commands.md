@@ -1,6 +1,6 @@
 <!--
 ignore these words in spell check for this file
-// cSpell:ignore trunc
+// cSpell:ignore trunc healthcheck
 -->
 
 ## Command line
@@ -35,6 +35,11 @@ commands (power shell):
   - _--link \<list>_ - enable dns on default bridge network.
   - _--rm_ - Automatically remove the container when it exits.
   - _--volume, -v_ - connect to a named volume.
+  - Health checks:
+    - _--health-cmd_ - which command to run
+    - _--health-retries_ - how many time to try the health check until reporting error
+    - _--health-start-period_ - how long to wait after initialization before starting health-retries countdown (ms|s|m|h format)
+    - _--health-timeout_ - how long to wait for each try
 - _docker container ls_ - list all the containers (new format). by default only shows running containers.
   - _-a_ - all, show also stopped containers.
   - _docker ps_ - list all containers (old format)
@@ -121,9 +126,19 @@ commands (power shell):
   - _--no-resolve_ - no mapping of IDs to name
   - _--no-trunc_ - show full id and image sha.
 - _docker service update \<service>_ - change attribute about the service
-  - _--replicas \#number_ -
+  - _--replicas \#number_ - change the number of replicas.
+  - _--image \<image>_ - update service to different image.
+  - _--env-add, --env-rm_ - add or remove environment variable.
+  - _--publish-add, --publish-rm_ - add or remove ports.
+  - _--force_ - force an update even if nothing changed.
 - _docker service rm_ - remove a service and it's containers.
 - _docker service logs_ - see logs of service
+- _docker service scale_ - scale one or more multiple replicated services. a quick command to set number of replicates across many services in one go.
+  - _--detach, -d_ - don't wait for services to converge
+- _docker service rollback_ - revert changes to a service.
+  - _--detach, -d_ - don't wait for services to converge
+  - _--quiet, -q_ - silent, no output
+-
 
 ### Docker Stack
 
@@ -157,6 +172,7 @@ Stanzas:
 - COPY
 - VOLUME
 - ENTRYPOINT
+- HEALTHCHECK
 
 ## Docker Compose YML
 
@@ -166,7 +182,7 @@ Stanzas:
 
 **which containers to run**
 
-- services:
+- services: service name:
   - image
   - environment
   - ports
@@ -189,6 +205,12 @@ Stanzas:
     - placement
       - constraints
   - secrets
+  - healthcheck
+    - test:[]
+    - interval
+    - timeout
+    - retries
+    - start_period
 
 **data volumes**
 
@@ -213,3 +235,5 @@ Stanzas:
     - _local_ - only images that don't have a custom tag set (locally built)
 - _docker-compose logs_ - see logs
 - _docker-compose build_ - build images
+- _docker-compose config_ - convert the files into a single compose file
+  - _docker-compose-convert_ - alternative name

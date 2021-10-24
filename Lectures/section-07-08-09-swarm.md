@@ -1,13 +1,13 @@
 <!--
 ignore these words in spell check for this file
-// cSpell:ignore psql  voteapp
+// cSpell:ignore psql voteapp Healthcheck healthchecks isready
 -->
 
 ## Swarms
 
-<!-- <details> -->
+<details>
 <summary>
-//TODO: add Summary about swarms
+Managing multiple nodes, each node is a machine that can run services.
 </summary>
 
 Swarm mode - a built-in clustering solution inside Docker. not related for 'swarm' add on from versions before pre-1.12 versions.
@@ -316,7 +316,7 @@ the routing mesh doesn't play well with web socket, so that's another issue.
 
 <details>
 <summary>
-Stacks are ways to configure the swarm in a file. secrets are stored securly and can only be ace
+Stacks are ways to configure the swarm in a file. secrets are stored securely and can only be accessed by those who need them.
 </summary>
 
 stacks of service, another layer of abstraction, stack accept compose files as declarative definition for services, networks, volumes.
@@ -452,16 +452,194 @@ vim:
 
 </details>
 
-#
+#### Using Secrets With Local Docker Compose
 
-##
+<details>
+<summary>
+Secrets for local docker compose.
+</summary>
 
-swarmstacks and sectert
+using the secrets in local container. we still use the same compose file
+
+```sh
+cd secrets-sample-2
+docker node ls #verify we aren't on the swarm manager
+docker-compose up -d
+docker-compose exec psql cat /run/secrets/psql_user
+```
+
+the secret should be visible. it's uses bind mount, even though it's not secure. it allows for local development. it only works for file based secrets, not for external secrets
 
 </details>
 
-##
+</details>
 
-swarms
+### Swarm Life Cycle
+
+<details>
+<summary>
+Life cycle of swarms
+</summary>
+
+how do deploy swarms in different environments, how to check that services and containers are running properly.
+
+#### Full App Lifecycle: Dev, Build and Deploy With a Single Compose Design
+
+<details>
+<summary>
+Different environments, one set of files
+</summary>
+
+we might need more than one compose file. for local and remote development we use `docker-compose up`, and for production we use `docker stack deploy`.
+
+lets go to swarm-stack-3. we see different docker-compose yml files, we have the default file (docker-compose.yml), the override file (which works as the local version), and versions for production and test, which require `docker-compose -f` to specify the file, we might also have a docker-config file that creates them together.
+
+the base file configure contains just the services names, the rest is pulled from the additional files. once we inspect the drupal container mounts we see what was declared in the override file
+
+```sh
+cd swarm-stack-3
+ls
+docker-compose up -d
+docker container ls
+docker inspect swarm-stack-3-drupal-1
+docker inspect swarm-stack-3-drupal-1 --format "{{json .Mounts }}"
+docker-compose down
+```
+
+for a CI solution, we would need to combine the files, in this case the order matters, when we inspect, we don't see any mounts
+
+```
+docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+docker-compose down
+```
+
+for the production configuration, things are different, we first use the config command to create a file with the combined compose. we could output this text to a file and use it with _-f_ in another command. at the time of the video, there are some bugs and missing features.
+
+```
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml config > output.yml
+docker-compose -f output.yml up -d
+docker-compose down
+```
+
+</details>
+
+#### Service Updates: Changing Things In Flight
+
+<details>
+<summary>
+updating services without restarting everything completely, rolling updates.
+</summary>
+
+updating services - a rolling update pattern, updating containers by replacing the replicas with the updated settings.
+
+we don't prevent 'downtime', we limit it.
+
+updating services has different difficulty based on the type of the service, some are easy (rest api) and some are harder (databases, web sockets).
+
+we options to create and remove settings.usually by applying the _-add_ and _-rm_ modifiers to our commands. this helps when there are multiple values.\
+the are options to control rollback and health check options. in the past scale and rollback were parts of the update command, now they can be used directly. so now they can apply to more than one service
+
+a stack deploy (when the stack is already existing) will also issue service updates.
+
+```sh
+docker service scale web=4
+docker service rollback web
+docker service update --image my_app:1.2.1 web
+docker service update --env-add NODE_ENV=Production --publish-rm 8080
+docker service scale web=5, db=3
+```
+
+in the swarm stack file, we update the yml file and then deploy again. this determines which changes are needed and then does it.
+
+```sh
+docker stack deploy -c file.yml <stack name>
+```
+
+for our example, we will use a simple service to play with, we need to be on a swarm node manager...\
+when we update the image we see how they are changed one at time, and not all at once. when we remove the ports, we don't need to specify both values, just one. same as when we remove a environment variable (only the name,we don't care about the value when removing it).
+
+```sh
+docker swarm init
+docker service create -p 8088:80 --name web nginx:1.13.7
+docker service ls
+docker service scale web=5
+docker service update --image nginx:1.13.6 web
+docker service update --publish-rm 8088 --publish-add 9090:80 web
+```
+
+there is an issue with **re-balancing**, swarm won't move services around on its own, but if we force an update, the services will be created on the least used node.
+
+```sh
+docker service update --force web
+```
+
+</details>
+
+#### Healthchecks in Docker files
+
+<details>
+<summary>
+running health checks - verify some status of the container or the service
+</summary>
+
+a new feature added in v1.12, works with most of the modes such as dockerfile, compose.yml, docker container run and swarm services.
+
+using this will cause an _exec_ in the container itself. so this works even on worker nodes, without open ports. will return 0 (success) or _exit 1_(error). there are three containers states: starting, health, unhealthy.
+
+this is better than just asking "is the binary sill running?", but it doesn't replace monitoring. we can see this status when we check the containers list,and we can see last 5 health check when we inspect it.
+
+however, docker doesn't do anything with health check but itself. the swarm managers should check this and take action.
+
+each image should have it's own health check protocol. but we can have one of our own if we want to. in this example we add one at runtime. we have the "|| false" exit code in the pipe to ensure we get error code of 1 (and not something else).
+
+```sh
+docker container run --health-cmd="curl -f localhost:9200/_cluster/health || false" --health-interval=5s  --health-retries=3 --health-timeout=2s --health-start-period=15s elasticsearch:2
+
+docker container inspect <id> --format "{{json .State.Health}}"
+```
+
+the docker file also has a `HEALTHCHECK` stanza which we can control and add the same options to
+
+> - _--interval=\<Duration>_, default 30s
+> - _--timeout=\<Duration>_, default 30s
+> - _--start-period=\<Duration>_, default 0s
+> - _--retries=\<N>_, default 3 times
+>
+> the basic healthcheck command is
+> `HEALTHCHECK curl -f http://localhost/ || false`
+>
+> adding the options looks like this, a single line. this time using _exit 1_ \
+> `HEALTHCHECK --timeout =2s --interval=3s --retries=3 \ CMD curl -f http://localhost/ || exit 1`
+
+there are examples for health checks of php and postgres servers.
+
+we can also add this to a compose /stack file. part of the service. for the start_period we need a compose version of 3.4 at the very least
+
+if we run these two containers, we can see that one has a health check status and one doesn't.
+
+```
+docker container run --name p1 --env "POSTGRES_HOST_AUTH_METHOD=trust" -d postgres
+docker container run --name p2 --env "POSTGRES_HOST_AUTH_METHOD=trust" -d --health-cmd="pg_isready -U postgres || exit 1" postgres
+docker container ls
+docker container inspect p2 --format "{{json .State.Health}}"
+docker container stop p1 p2
+docker container rm p1 p2
+docker container ls -a
+```
+
+a service can be on three different states: "preparing","starting","running". we can try comparing both options, when we add a health check, we can see how much longer it takes to start, because we are waiting for the start period.
+
+```sh
+docker swarm init
+docker service create --name p1 --env "POSTGRES_HOST_AUTH_METHOD=trust" postgres
+docker service create --name p2 --env "POSTGRES_HOST_AUTH_METHOD=trust" --health-cmd="pg_isready -U postgres || exit 1" postgres
+
+docker service rm p1 p2
+docker swarm leave --force
+```
+
+</details>
+
+</details>
 
 </details>
