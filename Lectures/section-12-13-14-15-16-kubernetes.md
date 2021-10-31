@@ -425,6 +425,7 @@ a yaml can be a single file or split across many files.
 the declrative approch works for large and complex situations.
 something called _GetOps_ model.
 
+</details>
 
 #### Three Management Approaches
 
@@ -454,5 +455,243 @@ the best advice is to avoid mixing the approches, and to use declrative objects 
 > - This trains you for later doing _GitOps_ - where git commits are automatically applied to clusters
 
 </details>
+	
+
+### Moving To Declarative Kubernetes
+
+<details>
+<summary>
+Using yaml files to run kubernetes.
+</summary>
+
+adopting the `kubectl apply` method, where all the changes are done to the yaml file, like how swarm uses stack deploy.
+
+#### kubectl apply
+
+<details>
+<summary>
+One command for files, directories and online resources.
+</summary>
+
+Kubernetes is unopinionated. it has many ways to do the same things, like the three approches from above.
+
+Infrastrucutes as code, "__GitOps__", fully declarative kubernetes.
+The command that we almost exculisvly use is `kubectl apply -f <filename>.yml`
+We will skip the middleman commands of `kubectl create`,`kubectl replace` and `kubectl edit`, which belong to the imperative objects approch.
+
+quick examples
+create/update resources in a file
+`kubectl apply -f myfile.yaml`
+create/update a whole directory of yaml files
+`kubectl apply -f my-yaml/`
+create/update from a URL 
+`kubectl apply -f https://bret.run/pod/yml`
+but be careful, it's really dangerous if we don't know what it is, so we should check if first
+unix: `curl -L https://bret.run/pod`
+windows power shell: `start https://bret.run/pod.yml`
+
 </details>
+
+#### Kubernetes Configuration YAML
+
+<details>
+<summary>
+How the configuration file looks
+</summary>
+
+the file is more complex than a "docker-compose" format, it has more flexability, and that comes with a learnning curve.
+we can also write this in json, but ths industry standard is yaml (which is then converted into json for the machine).
+
+we can a file with many resources or one file per resource. the description of a single resource is called a _manifest_, this can be for a deployment, a job, a secret or something else.
+
+each manifest needs four parts - rootkeys - key-value pairs at the root level.
+> - apiVersion
+> - kind
+> - metadata
+> - spec
+
+lets look at the "k8s-yaml" folder, we start by looking at the "pod.yml" file.
+
+this is the simplest thing to create, we can see all the four required root keys.
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.17.3
+    ports:
+    - containerPort: 80
+```
+same with the "deployment.yaml" file. the bulk of the data is in the 'spec', the apiVersion is related to the kind.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.17.3
+        ports:
+        - containerPort: 80
+```
+
+in the final file, "app.yaml", the two resources are combined, so we have two manifests in the same file.
+each has the four mandatory root keys. the manifests are separated by three dashes `---`
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-nginx-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+  selector:
+    app: app-nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app-nginx
+  template:
+    metadata:
+      labels:
+        app: app-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.17.3
+        ports:
+        - containerPort: 80
+```
+there are dozens of resource types, and each has differnt spec, we can extend resource types with something called __CRDS__. but that's for later.
+	
+</details>
+
+#### Building Your YAML Files
+
+<details>
+<summary>
+How to find what possible keys there are for each resouce.
+</summary>
+
+let's create a yaml from scratch. becuase kubernetes is always changing, many online resource are becoming outdated very quickly.
+
+if we want a list of the __kind__, we can get it from a cluster. 3rd party tools can add more of those.
+
+we get a list with many resources, but we care about the column __kind__, which is the name we use in the yaml file.
+the APIGroup is related to the APIversios, some resourcs belong to more than one api group. this usually means old and new api versions.
+we can see all the api-versions with a different command
+```sh
+kubectl api-resources
+kubectl api-versions
+```
+the metadata rootkey must have a name, this is the only required part.
+
+all the real action is in the spec rootkey.
+
+we can see all the keys that each kind support by using the `explain` command, we see the name and the type.
+we can drill down with the dot notation to get a refence manual for some stuff. we can drill down even to get a more readble text.
+this way we can see what's actually required, without relying on external documentation, which might be outdated.
+there is no limit to how much we can drill down.
+```sh
+kubectl explain pods
+kubectl explain serivces --recursive
+kubectl explain serivces.spec 
+kubectl explain serivces.spec.type
+kubectl explain deployment.spec.template.spec.volumes.nfs.server
+```
+(Note: the version we get from the `explain` command might be incorrect. we should use the `api-versions` command to be sure)
+
+[Kubernetes Documentations](https://kubernetes.io/docs/reference/#api-reference) can also help.
+
+</details>
+
+#### Dry Run and Diffs
+
+<details>
+<summary>
+seeing if stuff would change, and what would change.
+</summary>
+
+in the past, dry-run was client only, but now there is a server option, this will compare what we have and what we send it, and tell us what would happen.
+
+selectors are how an object finds the resources it talks to.
+
+```sh
+#traditional, client only, dry run check
+kubectl apply -f app.yml --dry-run
+```
+
+let's see this in action, this time we will what would have happened if we had run the command for real
+we only see if something would have changed  or not, if we wish to know what would have changed, we use the `diff` command.
+
+```sh
+kubectl apply -f app.yml #actually create
+
+#modern way, talks to server
+kubectl apply -f app.yml --server-dry-run
+# check differnces
+kubectl diff -f app.yml
+
+```
+we can change the yaml file and run the `diff` command again and see the changes in diff format.
+in the time of the video, these features are beta, but they are likely to change.
+
+</details>
+
+#### Labels and Label Selectors
+
+<details>
+<summary>
+Label,Label Selectors and Annotantions.
+</summary>
+
+label go under the metadata section in the yaml.
+They are a list of key-value pair for identifying the resource later by selecting, groupig of filtering for it.
+it can be anything that describes the objects, we can describe the enviorment, the tier, the name, the customer, the region.
+
+we can use multiple labels, logical conditions, etc...
+```sh
+kubectl get pods -l app=nginx #filter
+kubectl apply -f myfile.yaml -l app=nginx #only apply on resources with label
+```
+
+label selctors.
+how do services know which pods to send traffic to? label selcetors are "linked"  to labels.
+in some versions we can get this validated for matchLabels and labels in the yaml file.
+
+swarm has something similar, but it's done in the background and we can't reall customize it directly.
+
+selectors also use "taints and tolerations" to control node placements, which are like an inverse
+
+annotations are for more complex data, like configurations for stuff that talks back to kubernetes.
+
+final cleanup
+```sh
+kubectl get all
+kubectl delete <resource type>/<resource name>
+```
+
+</details>
+</details>	
 </details>
