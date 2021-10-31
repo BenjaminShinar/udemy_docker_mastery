@@ -7,7 +7,7 @@ ignore these words in spell check for this file
 
 <details>
 <summary>
-
+Kubernetes is service agonstic container orchestrator.
 </summary>
 
 ### The What And Why of Kubernetes
@@ -326,11 +326,11 @@ curl <hostname>.<namespace>.svc.cluster.local
 </details>
 </details>
 
-
 ### Kubernetes Managment Techniques
 
 <details>
 <summary>
+Hands on, Practical usage of Kubernetes
 </summary>
 
 #### Generators
@@ -339,12 +339,12 @@ curl <hostname>.<namespace>.svc.cluster.local
 <summary>
 seeing the deafult templates for common commands.
 </summary>
+	
 Run, create and expose Generators.
 generators are helper templates that activate when we use the `rul`,`creat` and `expose` commands of kubectl.
 every resource in kubernetes has a specification, this specification is created by the generator for the defaults.
 
 generators are "opinionated defaults", they work for most use cases.
-
 
 when we run a command, the rest of the options are filled in by the generator template, we can specify which generator version we want to use.
 the easiert way to see the specfications is to use the _--dry-run_ flag  together with the output flag _-o yaml_ to show the template.
@@ -377,7 +377,7 @@ however, in the future (post 2017 probably), we won't be using templates that mu
 
 <details>
 <summary>
-//todo
+Changes to the run command.
 </summary>
 
 the kubectl run command is scheduled to change and be reduced, this should happen in version 1.12-1.15, the idea is to reduce the scope of the run command and make it able to only create pods.
@@ -402,21 +402,57 @@ base | extra flags | created
 
 <details>
 <summary>
-//todo
+declrative and imperative kubernetes deployment.
 </summary>
+
+how to use kubernetes with best practices, basic terms
+
+> Imperative: Focus on _how_ a prgram operates. /
+> Declarative: focus on _what_ a program should accomplish.
+
+exaple of imperative and declrative styles as they relate to getting a cup of coffee.
+
+kubernetes imperative - the way to start learning any tool. explicit instruction, such as:
+`kubectl run`,`kubectl create deployment`,`kubectl update`.
+We start in a known state, differnt commands are rquired to change the object, and diffrent objects require different commands.
+imperative style is easy for humans to understand, but unfortunarly, it's hard to automate.
+
+declrative style works with an unknown state but a known end state. the same command does most of the work.
+`kubectl apply -f my-resources.yaml`
+(small exception for _delete_) 
+a yaml can be a single file or split across many files.
+
+the declrative approch works for large and complex situations.
+something called _GetOps_ model.
+
 
 #### Three Management Approaches
 
 <details>
 <summary>
-//todo
+Imperative, Imperative Objects, Declartive Objects
 </summary>
 
-# four
-</details>
+so far we have beed doing imperative commands: `run`,`expose`, `scale`,`edit`,`create deployment`.
+this works well for learning, for a single developer, for playing around.
 
-# three
-</details>
+there is a middle ground between imperative and declrative, this is the __imperative objects__:
+`create -f file.yml`, `replace -f file.yml`, `delete...`
+this works for small enviornments, single file per command, all the changes are stored in the files, so we don't lose them, but we still use the human words to describe what we do (create, replace, delete)
 
-# two file closing
+the declrative approch uses __declarive objects__
+`apply -f file.yml`, `apply -f dir\`,`diff`.
+best for production, easier to automate, but harder to understand as humans and hard to predict changes.
+this is most similar to swarm stack, where the same command does everything.
+
+the best advice is to avoid mixing the approches, and to use declrative objects as soon as possible, we combine this with source control so we can always recover our changes.
+
+> Bret's Recommendations:
+> - Learn the imperative CLI for easy control of local and test setups
+> - Move to `apply -f file.yml` and `apply -f directory\` for production
+> - Store yaml in _git_ ,`git commit` each change before you apply.
+> - This trains you for later doing _GitOps_ - where git commits are automatically applied to clusters
+
+</details>
+</details>
 </details>
