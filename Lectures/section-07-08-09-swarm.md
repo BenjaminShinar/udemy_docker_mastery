@@ -3,6 +3,8 @@ ignore these words in spell check for this file
 // cSpell:ignore psql voteapp Healthcheck healthchecks isready
 -->
 
+[Main](README.md)
+
 ## Swarms
 
 <details>
@@ -404,7 +406,7 @@ docker service update --secret-rm
 
 <details>
 <summary>
-using secrets in stacks
+Using secrets in stacks
 </summary>
 
 we can also have secrets with stacks, looking at "secrets-sample-2" folder, the minimal version is 3.1 for using secrets with stack.
@@ -643,3 +645,5 @@ docker swarm leave --force
 </details>
 
 </details>
+
+[Main](README.md)

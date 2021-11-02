@@ -1,13 +1,15 @@
 <!--
 ignore these words in spell check for this file
-// cSpell:ignore 
+// cSpell:ignore Kubernetes kube kubelet kubectl Cloudfoundry Mazos bretfister httpenv katakoda Minikube microk8s nodeport kubeadm CRDS netshoot
 -->
+
+[Main](README.md)
 
 ## Kubernetes
 
 <details>
 <summary>
-Kubernetes is service agonstic container orchestrator.
+Kubernetes is service agnostic container orchestrator.
 </summary>
 
 ### The What And Why of Kubernetes
@@ -18,15 +20,15 @@ The origins of Kubernetes and its benefits.
 </summary>
 
 a container orchestrator makes many servers act like one. Kubernetes was released in 2012 by google, it's a set of APIs that run on top of docker (or other container runtime), that do management.
-It provides api/cli to manage containers, similar to swarm, which is called "kube control", most cloud vendor provide Kubernetes as a service, and others cat make thier own "distributions" of Kubernetes with additional tools.
+It provides api/cli to manage containers, similar to swarm, which is called "kube control", most cloud vendor provide Kubernetes as a service, and others cat make their own "distributions" of Kubernetes with additional tools.
 
 as we recall from the [swarm lecture](//todo: make link), there are benefits for orchestration, and many projects are moving towards it. it's not mandatory, but very useful.
 a rough estimate for the benefit of orchestration is the number of servers/apps and the change rate. orchestration makes managing change easy, especially when things scale.
 
-some platforms for orchestrations are swarm, kubernetes, and ECS (only for AWS), cloudfoundry, mazos and marathon. kubernetes is hybrid, which means it can run on every cloud service and inside data centers and locally.
+some platforms for orchestrations are swarm, kubernetes, and ECS (only for AWS), Cloudfoundry, Mazos and marathon. kubernetes is hybrid, which means it can run on every cloud service and inside data centers and locally.
 
 the next step is to decide on the distribution for kubernetes, there are many vendors.
-One optionn is to use the raw githubs upstream kubernetes solution. but vendors can bundle many additional tools, which are required to use kubernetes in the real scenario.
+One options is to use the raw github upstream kubernetes solution. but vendors can bundle many additional tools, which are required to use kubernetes in the real scenario.
 
 #### Kubernetes Or Swarm
 
@@ -36,10 +38,10 @@ Comparing two orchestration options.
 </summary>
 
 Kubernetes and swarm are both container orchestrations tools that solve similar problems.
-swarm is eaiser to start with deployment and management, while kubernetes has more options for control and flexability, and can solve stuff that swarm can't.
+swarm is easier to start with deployment and management, while kubernetes has more options for control and flexibility, and can solve stuff that swarm can't.
 
 Advantages to Swarm:
-- Comes with docker, a single vendor solution. runs whereever docker runs, linux, windows, arm devices, 32-bit, 64-bit, windows server.
+- Comes with docker, a single vendor solution. runs wherever docker runs, linux, windows, arm devices, 32-bit, 64-bit, windows server.
 - Lightweight, doesn't consume many resources.
 - Easiest orchestrator to deploy and run 
 - Has the basic, most common and most used features to handle most use cases and issues.
@@ -48,8 +50,8 @@ Advantages to Swarm:
 - Easier to troubleshoot.
 
 advantages for Kubernetes:
-- Wide support from cloud vendors and mand kubernetes distributions. "Kubernetes first support" model.
-- Flexability for many use cases, more edge cases than swarm.
+- Wide support from cloud vendors and and kubernetes distributions. "Kubernetes first support" model.
+- Flexibility for many use cases, more edge cases than swarm.
 - Trendy, popular, nearly industry standard.
 	- "No one ever got fired for buying IBM."
 
@@ -72,7 +74,7 @@ Commonly used terms and system topology.
 
 [Kubernetes Components Overview](https://kubernetes.io/docs/concepts/overview/components/)
 
-- Kubernetes: the whole orchestration system abbrivated as __K8s__ ("k-eights" - the 8 is the eight letters skipped), also __Kube__.
+- Kubernetes: the whole orchestration system abbreviated as __K8s__ ("k-eights" - the 8 is the eight letters skipped), also __Kube__.
 - Kubectl(kube control): the command line tool, configure kubernetes, manage applications on it. 
 - Node: single server in the kubernetes cluster
 - Kubelet: the kubernetes agent running on the nodes. talks back to the kubernetes master. there is no similar thing in swarm.
@@ -81,18 +83,18 @@ Commonly used terms and system topology.
 Function | Swarm | Kubernetes
 ------|-------|---------
 Command line tool (CLI) | docker cli | Kubectl
-Node agent | none | kubelt
+Node agent | none | kubelet
 cluster management | manager nodes | control plane containers ("master")
 
 
 
-Raft protocl to maintain consistency.
+Raft protocol to maintain consistency.
 
 a master has 
 - etcd database,built on top of Raft. 
 - API
 - Scheduler
-- Contoller manager to detect differnces between the current state and the required state
+- Controller manager to detect differences between the current state and the required state
 - Core DNS
 - other stuff (networking)
 
@@ -104,14 +106,14 @@ a worker nod has
 Kubernetes Containers Abstractions:
 
 - Pod: basic unit of deployment, pods have containers (one or more running together) on a single node.
-- Contollers - control the pods, this is what we use to deploy pods. (like services in swarm). types of contollres
+- Controllers - control the pods, this is what we use to deploy pods. (like services in swarm). types of controllers
 	- Deployment
 	- Replica Set
 	- Stateful Set
 	- Daemon Set
 	- Job
 	- CronJob
-- Service (not service in swarm) - the network endpoint to connect to a pod. a persistent inpoint in the cluster
+- Service (not service in swarm) - the network endpoint to connect to a pod. a persistent In-point in the cluster
 - Namespace - filtered group of object in the cluster, not a security feature, not the same as docker namespaces.
 
 </details>
@@ -123,13 +125,13 @@ Kubernetes Containers Abstractions:
 setting up kubernetes on a local machine.
 </summary>
 
-Kubernetes is a series of containers, CLI's and configurations. there are different installations packages, but we will focus on the easiest one to install for learnning purposes.
+Kubernetes is a series of containers, CLI's and configurations. there are different installations packages, but we will focus on the easiest one to install for learning purposes.
 
-Docker desktop is probably the easiest think to use, otherwise, we can use Docker toolboox or MicroK8s. we can also use online options such as play-with-k8s and katakoda.
+Docker desktop is probably the easiest think to use, otherwise, we can use Docker toolbox or MicroK8s. we can also use online options such as play-with-k8s and katakoda.
 
 docker desktop is easy to install and manages installations of the correct version of kubernetes, and can help with resources management.
 Minikube is another tool to run kubernetes, which has similar syntax to docker, but doesn't have kubectl out of the box.
-for linux we can use microK8s. it uses snap for installtion (rather than apt or yum). to access kubectl we need to prefix it, but we can alias this in the bash profile file.
+for linux we can use microK8s. it uses snap for installation (rather than apt or yum). to access kubectl we need to prefix it, but we can alias this in the bash profile file.
 ```sh
 #alias kubectl
 alias kubectl=microk8s.kubectl
@@ -144,7 +146,7 @@ alias kubectl=microk8s.kubectl
 creating deployments, scaling and inspecting objects.
 </summary>
 
-in kubernetes, we have more layets of abstractions: pod inside a replicaSet inside a Deployment.
+in kubernetes, we have more layers of abstractions: pod inside a replicaSet inside a Deployment.
 
 kubectl is still evolving, there are many ways to do the same thing, and stuff is changing all the time. the instructions in the video are pre 2021 era. 
 
@@ -152,7 +154,7 @@ kubectl is still evolving, there are many ways to do the same thing, and stuff i
 > kubectl create - like docker swarm service create
 > kubectl apply - like stack deploy / update, via yaml files.
 
-since then, `kubectl run` was changed to behave more like `docker container run`, so it creaes a single pod (not repllicaSet). the deployment functionaliy was moved to `kubectl create deployment`.
+since then, `kubectl run` was changed to behave more like `docker container run`, so it creates a single pod (not replicaSet). the deployment functionality was moved to `kubectl create deployment`.
 
 
 we first check that we have kubernetes and that's its running, we have a client and a server versions. if we don't see a server version that means we have a problem.\
@@ -171,7 +173,7 @@ the updated form is
 ```sh
 kubectl create deployment some-name --image nginx
 ```
-like in swarm, we have the option to scale the number of pods in the replica set. there are shortend forms to the scale command.
+like in swarm, we have the option to scale the number of pods in the replica set. there are shorthand forms to the scale command.
 
 ```sh
 #still old form, pre 1.18 version
@@ -182,9 +184,9 @@ kubectl scale deployment my-apache --replicas 2
 ```
 
 1. deployment updated to 2 replicas
-2. replicaset contollre sets pod count to 2
-3. contol plane assigns node to pod
-4. Kublet sees pod is needed, starts container
+2. ReplicaSet controller sets pod count to 2
+3. Control plane assigns node to pod
+4. Kubelet sees pod is needed, starts container
 
 now we want to inspect our objects
 
@@ -212,7 +214,7 @@ kubectl get pods
 kubectl deployment my-apache
 ```
 
-kubernetes allows us flexability, but it's dangerous and we might end up shooting ourslves in the foot.
+kubernetes allows us flexibility, but it's dangerous and we might end up shooting ourselves in the foot.
 </details>
 </details>
 
@@ -232,25 +234,25 @@ Services and types, what is expose internally and externally
 Four service types.
 </summary>
 
-exposing containers to the outside world, allow them to recieve connections, we use the `kubectl expose` command to create a serice for __existing pods__.
+exposing containers to the outside world, allow them to receive connections, we use the `kubectl expose` command to create a service for __existing pods__.
 a service is a consistent end point for a pod, the common way is by using CoreDNS to resolve services by name.
 
-there are four diffrent types of serivs:
+there are four different types of services:
 - ClusterIP (default)
 - NodePort
 - LoadBalancer
 - ExternalName
 
-ClusterIP is only availble in the cluster, has it's own dns address, a single, internal virtual IP. pods can reach serivce on apps port number. like in swarm, when we have an internal ip.
+ClusterIP is only available in the cluster, has it's own dns address, a single, internal virtual IP. pods can reach service on apps port number. like in swarm, when we have an internal ip.
 NodePort is for stuff outside the cluster, high port allocated on each node. port is open of every node IP,
-the LoadBalancer is more advanced, mostly used on the cloud, an external load balancer, comes from the infrastrucutre.
+the LoadBalancer is more advanced, mostly used on the cloud, an external load balancer, comes from the infrastructure.
 ExternalName is less common, its about resolving external names in the DNS. might be used in migration
 
 there is also a kubernetes _ingress_ for http requests.
 
 Creating a ClusterIP Service:
 
-again, we create two terminals, one that watches the pods and one tha does the actual thing. the container itself knows to return the enviornment variables.
+again, we create two terminals, one that watches the pods and one tha does the actual thing. the container itself knows to return the environment variables.
 we create the service with the `kubectl expose` command and the port number. this doesn't change the pods actually. it creates a ClusterIP.
 this ip is only accessible from within the cluster.
 ```sh
@@ -263,7 +265,7 @@ kubectl get service
 ```
 
 if we are using a hosting OS, such as docker desktop, we need to create a pod to curl the other service.
-(uses the old syntax, we explictly specify that we want a pod, not a deployment) the generator is the template, this is supposed to look similar to the docker container run command.
+(uses the old syntax, we explicitly specify that we want a pod, not a deployment) the generator is the template, this is supposed to look similar to the docker container run command.
 the double dash flag -- means that there are no more flags, and that the following is command to run on the pod.
 ```sh
 kubectl run --generator run-pod/v1 tmp-shell --rm -it --image bretfisher/netshoot -- bash
@@ -271,17 +273,17 @@ kubectl run --generator run-pod/v1 tmp-shell --rm -it --image bretfisher/netshoo
 curl httpenv:8888
 #when we exit the shell, the container will be removed
 ```
-if we are on linux and we are runnig kubernetes locally, we can simply curl it from the shell with the ip address and the port (but not with the service name)
+if we are on linux and we are running kubernetes locally, we can simply curl it from the shell with the ip address and the port (but not with the service name)
 ```sh
 curl ##.###.##.##:8888
 ```
 
 Creating a node Port and LoadBalancer service:
 
-contiuing with the same set up.
+continuing with the same set up.
 if we want to expose a node port externally, we need to set the type with the _--type_ flag.
 now we can see the new service, with the internal and external port. it's reversed from the docker syntax, now it's internal on the left and external on the right.
-the services are additive, each level creates the base level, so nodeport creates a clusterIP, and loadbalancer created a nodePort
+the services are additive, each level creates the base level, so nodeport creates a clusterIP, and load balancer created a nodePort
 docker 
 ```sh
 kubectl get all
@@ -291,18 +293,18 @@ kubectl get services
 curl localhost:3#####
 ```
 
-the docker desktop comes with a load balancer, which allows us. minikub, microk8s and kubeadm don't have a built-in load balancer (in the time of the video)
-now we can use the lowport address
+the docker desktop comes with a load balancer, which allows us. minikube, microk8s and kubeadm don't have a built-in load balancer (in the time of the video)
+now we can use the low port address
 ```sh
-kubectl expose deployment/httpenv ---port 8888 --name httpend-lb --type LoadBalancer
+kubectl expose deployment/httpenv ---port 8888 --name httpenv-lb --type LoadBalancer
 kubectl get services
 curl localhost:8888
 ```
 
-for cleanup, we can delete multiple objects of differnt types in the same line
+for cleanup, we can delete multiple objects of different types in the same line
 ```sh
-kubectl delete service/httpenv serivce/httpenv-np
-kubectl delete serivce/httpenv-lb deployment/httpenv
+kubectl delete service/httpenv service/httpenv-np
+kubectl delete service/httpenv-lb deployment/httpenv
 ```
 
 
@@ -326,7 +328,7 @@ curl <hostname>.<namespace>.svc.cluster.local
 </details>
 </details>
 
-### Kubernetes Managment Techniques
+### Kubernetes Management Techniques
 
 <details>
 <summary>
@@ -337,17 +339,17 @@ Hands on, Practical usage of Kubernetes
 
 <details>
 <summary>
-seeing the deafult templates for common commands.
+seeing the default templates for common commands.
 </summary>
 	
 Run, create and expose Generators.
-generators are helper templates that activate when we use the `rul`,`creat` and `expose` commands of kubectl.
+generators are helper templates that activate when we use the `rul`,`create` and `expose` commands of kubectl.
 every resource in kubernetes has a specification, this specification is created by the generator for the defaults.
 
 generators are "opinionated defaults", they work for most use cases.
 
 when we run a command, the rest of the options are filled in by the generator template, we can specify which generator version we want to use.
-the easiert way to see the specfications is to use the _--dry-run_ flag  together with the output flag _-o yaml_ to show the template.
+the easiest way to see the specifications is to use the _--dry-run_ flag  together with the output flag _-o yaml_ to show the template.
 
 in the video, we see the api version V1, the kind (deployment), metadata such as labels, replicas, a selector, a template for the replicaSet and the containers.
 ```sh
@@ -382,7 +384,7 @@ Changes to the run command.
 
 the kubectl run command is scheduled to change and be reduced, this should happen in version 1.12-1.15, the idea is to reduce the scope of the run command and make it able to only create pods.
 the rest of the functionality would go in `kubectl create` command. this is done to make the `run` command similar to `docker container run`, so it'll be easy to create one-off tasks.
-this won't be used in production enviornments, but has it's uses.
+this won't be used in production environments, but has it's uses.
 
 we will see this in the future, it will be a long time until everybody updates this.
 
@@ -393,7 +395,7 @@ base | extra flags | created
 `kubectl run test --image nginx --dry-run` |  none | deployment created
 `kubectl run test --image nginx --port 80 --expose --dry-run` | ports, expose | deployment and service created
 `kubectl run test --image nginx --restart OnFailure --dry-run` | restart | batch job created
-`kubectl run test --image nginx --restart Never --dry-run` | restart | pod created (future deafult)
+`kubectl run test --image nginx --restart Never --dry-run` | restart | pod created (future default)
 `kubectl run test --image nginx --schedule "*/1 * * * *" --dry-run` | schedule | cron job created
 
 </details>
@@ -402,27 +404,27 @@ base | extra flags | created
 
 <details>
 <summary>
-declrative and imperative kubernetes deployment.
+declarative and imperative kubernetes deployment.
 </summary>
 
 how to use kubernetes with best practices, basic terms
 
-> Imperative: Focus on _how_ a prgram operates. /
+> Imperative: Focus on _how_ a program operates. /
 > Declarative: focus on _what_ a program should accomplish.
 
-exaple of imperative and declrative styles as they relate to getting a cup of coffee.
+example of imperative and declarative styles as they relate to getting a cup of coffee.
 
 kubernetes imperative - the way to start learning any tool. explicit instruction, such as:
 `kubectl run`,`kubectl create deployment`,`kubectl update`.
-We start in a known state, differnt commands are rquired to change the object, and diffrent objects require different commands.
-imperative style is easy for humans to understand, but unfortunarly, it's hard to automate.
+We start in a known state, different commands are required to change the object, and different objects require different commands.
+imperative style is easy for humans to understand, but unfortunately, it's hard to automate.
 
-declrative style works with an unknown state but a known end state. the same command does most of the work.
+declarative style works with an unknown state but a known end state. the same command does most of the work.
 `kubectl apply -f my-resources.yaml`
 (small exception for _delete_) 
 a yaml can be a single file or split across many files.
 
-the declrative approch works for large and complex situations.
+the declarative approach works for large and complex situations.
 something called _GetOps_ model.
 
 </details>
@@ -431,22 +433,22 @@ something called _GetOps_ model.
 
 <details>
 <summary>
-Imperative, Imperative Objects, Declartive Objects
+Imperative, Imperative Objects, Declarative Objects
 </summary>
 
-so far we have beed doing imperative commands: `run`,`expose`, `scale`,`edit`,`create deployment`.
+so far we have been doing imperative commands: `run`,`expose`, `scale`,`edit`,`create deployment`.
 this works well for learning, for a single developer, for playing around.
 
-there is a middle ground between imperative and declrative, this is the __imperative objects__:
+there is a middle ground between imperative and declarative, this is the __imperative objects__:
 `create -f file.yml`, `replace -f file.yml`, `delete...`
-this works for small enviornments, single file per command, all the changes are stored in the files, so we don't lose them, but we still use the human words to describe what we do (create, replace, delete)
+this works for small environments, single file per command, all the changes are stored in the files, so we don't lose them, but we still use the human words to describe what we do (create, replace, delete)
 
-the declrative approch uses __declarive objects__
+the declarative approach uses __declarative objects__
 `apply -f file.yml`, `apply -f dir\`,`diff`.
 best for production, easier to automate, but harder to understand as humans and hard to predict changes.
 this is most similar to swarm stack, where the same command does everything.
 
-the best advice is to avoid mixing the approches, and to use declrative objects as soon as possible, we combine this with source control so we can always recover our changes.
+the best advice is to avoid mixing the approaches, and to use declarative objects as soon as possible, we combine this with source control so we can always recover our changes.
 
 > Bret's Recommendations:
 > - Learn the imperative CLI for easy control of local and test setups
@@ -473,15 +475,15 @@ adopting the `kubectl apply` method, where all the changes are done to the yaml 
 One command for files, directories and online resources.
 </summary>
 
-Kubernetes is unopinionated. it has many ways to do the same things, like the three approches from above.
+Kubernetes is un-opinionated. it has many ways to do the same things, like the three approaches from above.
 
-Infrastrucutes as code, "__GitOps__", fully declarative kubernetes.
-The command that we almost exculisvly use is `kubectl apply -f <filename>.yml`
-We will skip the middleman commands of `kubectl create`,`kubectl replace` and `kubectl edit`, which belong to the imperative objects approch.
+Infrastructures as code, "__GitOps__", fully declarative kubernetes.
+The command that we almost exclusively use is `kubectl apply -f <filename>.yml`
+We will skip the middleman commands of `kubectl create`,`kubectl replace` and `kubectl edit`, which belong to the imperative objects approach.
 
 quick examples
 create/update resources in a file
-`kubectl apply -f myfile.yaml`
+`kubectl apply -f my_file.yaml`
 create/update a whole directory of yaml files
 `kubectl apply -f my-yaml/`
 create/update from a URL 
@@ -499,12 +501,12 @@ windows power shell: `start https://bret.run/pod.yml`
 How the configuration file looks
 </summary>
 
-the file is more complex than a "docker-compose" format, it has more flexability, and that comes with a learnning curve.
+the file is more complex than a "docker-compose" format, it has more flexibility, and that comes with a learning curve.
 we can also write this in json, but ths industry standard is yaml (which is then converted into json for the machine).
 
 we can a file with many resources or one file per resource. the description of a single resource is called a _manifest_, this can be for a deployment, a job, a secret or something else.
 
-each manifest needs four parts - rootkeys - key-value pairs at the root level.
+each manifest needs four parts - RootKeys - key-value pairs at the root level.
 > - apiVersion
 > - kind
 > - metadata
@@ -583,7 +585,7 @@ spec:
         ports:
         - containerPort: 80
 ```
-there are dozens of resource types, and each has differnt spec, we can extend resource types with something called __CRDS__. but that's for later.
+there are dozens of resource types, and each has different spec, we can extend resource types with something called __CRDS__. but that's for later.
 	
 </details>
 
@@ -591,33 +593,33 @@ there are dozens of resource types, and each has differnt spec, we can extend re
 
 <details>
 <summary>
-How to find what possible keys there are for each resouce.
+How to find what possible keys there are for each resource.
 </summary>
 
-let's create a yaml from scratch. becuase kubernetes is always changing, many online resource are becoming outdated very quickly.
+let's create a yaml from scratch. because kubernetes is always changing, many online resource are becoming outdated very quickly.
 
 if we want a list of the __kind__, we can get it from a cluster. 3rd party tools can add more of those.
 
 we get a list with many resources, but we care about the column __kind__, which is the name we use in the yaml file.
-the APIGroup is related to the APIversios, some resourcs belong to more than one api group. this usually means old and new api versions.
+the APIGroup is related to the APIVersions, some resource belong to more than one api group. this usually means old and new api versions.
 we can see all the api-versions with a different command
 ```sh
 kubectl api-resources
 kubectl api-versions
 ```
-the metadata rootkey must have a name, this is the only required part.
+the metadata rootKey must have a name, this is the only required part.
 
-all the real action is in the spec rootkey.
+all the real action is in the spec rootKey.
 
 we can see all the keys that each kind support by using the `explain` command, we see the name and the type.
-we can drill down with the dot notation to get a refence manual for some stuff. we can drill down even to get a more readble text.
+we can drill down with the dot notation to get a reference manual for some stuff. we can drill down even to get a more readable text.
 this way we can see what's actually required, without relying on external documentation, which might be outdated.
 there is no limit to how much we can drill down.
 ```sh
 kubectl explain pods
-kubectl explain serivces --recursive
-kubectl explain serivces.spec 
-kubectl explain serivces.spec.type
+kubectl explain services --recursive
+kubectl explain services.spec 
+kubectl explain services.spec.type
 kubectl explain deployment.spec.template.spec.volumes.nfs.server
 ```
 (Note: the version we get from the `explain` command might be incorrect. we should use the `api-versions` command to be sure)
@@ -650,7 +652,7 @@ kubectl apply -f app.yml #actually create
 
 #modern way, talks to server
 kubectl apply -f app.yml --server-dry-run
-# check differnces
+# check differences
 kubectl diff -f app.yml
 
 ```
@@ -663,26 +665,26 @@ in the time of the video, these features are beta, but they are likely to change
 
 <details>
 <summary>
-Label,Label Selectors and Annotantions.
+Label,Label Selectors and Annotations.
 </summary>
 
 label go under the metadata section in the yaml.
-They are a list of key-value pair for identifying the resource later by selecting, groupig of filtering for it.
-it can be anything that describes the objects, we can describe the enviorment, the tier, the name, the customer, the region.
+They are a list of key-value pair for identifying the resource later by selecting, grouping of filtering for it.
+it can be anything that describes the objects, we can describe the environment, the tier, the name, the customer, the region.
 
 we can use multiple labels, logical conditions, etc...
 ```sh
 kubectl get pods -l app=nginx #filter
-kubectl apply -f myfile.yaml -l app=nginx #only apply on resources with label
+kubectl apply -f my_file.yaml -l app=nginx #only apply on resources with label
 ```
 
-label selctors.
-how do services know which pods to send traffic to? label selcetors are "linked"  to labels.
+label selectors.
+how do services know which pods to send traffic to? label selectors are "linked"  to labels.
 in some versions we can get this validated for matchLabels and labels in the yaml file.
 
-swarm has something similar, but it's done in the background and we can't reall customize it directly.
+swarm has something similar, but it's done in the background and we can't really customize it directly.
 
-selectors also use "taints and tolerations" to control node placements, which are like an inverse
+selectors also use "taints and toleration" to control node placements, which are like an inverse
 
 annotations are for more complex data, like configurations for stuff that talks back to kubernetes.
 
@@ -693,5 +695,9 @@ kubectl delete <resource type>/<resource name>
 ```
 
 </details>
-</details>	
+
 </details>
+
+</details>
+
+[Main](README.md)
