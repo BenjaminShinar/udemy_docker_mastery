@@ -1,7 +1,9 @@
 <!--
 ignore these words in spell check for this file
-// cSpell:ignore trunc healthcheck
+// cSpell:ignore trunc 
 -->
+
+[Main](README.md)
 
 ## Command line
 
@@ -173,6 +175,8 @@ Stanzas:
 - VOLUME
 - ENTRYPOINT
 - HEALTHCHECK
+- USER
+- ADD
 
 ## Docker Compose YML
 
@@ -237,3 +241,5 @@ Stanzas:
 - _docker-compose build_ - build images
 - _docker-compose config_ - convert the files into a single compose file
   - _docker-compose-convert_ - alternative name
+
+[Main](README.md)

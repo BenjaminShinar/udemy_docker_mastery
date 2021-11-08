@@ -1,0 +1,15 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [
+        "WORKDIR",
+        "ENTRYPOINT",
+        "HEALTHCHECK",
+        "Kubernetes",
+        "Dockerfile",
+        "Dockerfiles"],
+    "ignoreWords": ["bretfisher"],
+    "import": []
+}
